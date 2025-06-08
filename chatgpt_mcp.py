@@ -1,15 +1,60 @@
-#!/usr/bin/env python3
-"""ChatGPT MCP Server - A Model Context Protocol server for interacting with ChatGPT on macOS"""
-
-import asyncio
 import subprocess
-import base64
-import re
+import time
+import pyautogui
 from typing import Optional
 from mcp.server.fastmcp import FastMCP
+import subprocess
+
+def force_copy_to_clipboard(text):
+    # 특수문자 이스케이프 처리
+    escaped_text = text.replace('"', '\\"').replace("'", "\\'")
+    
+    # AppleScript로 직접 클립보드 설정
+    script = f'''
+    on run
+        set the clipboard to "{escaped_text}"
+    end run
+    '''
+    
+    subprocess.run(['osascript', '-e', script])
+    
+    # 확인
+    result = subprocess.run(['pbpaste'], capture_output=True, text=True)
+    print(f"클립보드 확인: {result.stdout[:50]}...")
+def paste_to_active_app():
+    """현재 활성화된 앱에 붙여넣기"""
+    script = '''
+    tell application "System Events"
+        keystroke "v" using command down
+    end tell
+    '''
+    subprocess.run(['osascript', '-e', script])
+
+class ChatGPTAutomation:
+    def __init__(self):
+        # 안전 설정
+        pyautogui.FAILSAFE = True
+        pyautogui.PAUSE = 0.5
+        
+    def activate_chatgpt(self):
+        """ChatGPT Desktop 앱 활성화"""
+        # macOS의 경우
+        subprocess.run(['osascript', '-e', 
+            'tell application "ChatGPT" to activate'])
+        time.sleep(1)
+        
+    def send_message(self, message):
+        """메시지 전송"""
+        # 클립보드를 통한 안전한 한글 입력
+        time.sleep(0.3)  # 클립보드 복사 완료 대기
+        force_copy_to_clipboard(message)
+        paste_to_active_app()  # 클립보드 내용 가져오기
+        time.sleep(0.5)  # 붙여넣기 완료 대기
+        pyautogui.press('enter')
 
 # Initialize the MCP server
 mcp = FastMCP("chatgpt")
+chatgpt_automation = ChatGPTAutomation()
 
 async def check_chatgpt_access() -> bool:
     """Check if ChatGPT app is installed and running"""
@@ -49,61 +94,14 @@ async def ask_chatgpt(prompt: str, conversation_id: Optional[str] = None) -> str
     await check_chatgpt_access()
     
     try:
-        # Check if prompt contains CJK (Chinese, Japanese, Korean) characters
-        def has_cjk_chars(text):
-            return bool(re.search(r'[\u4e00-\u9fff\u3400-\u4dbf\u3040-\u309f\u30a0-\u30ff\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]', text))
-        
-        has_cjk = has_cjk_chars(prompt)
-        processed_prompt = prompt
-        
-        if has_cjk:
-            # Encode multi-byte text to Base64 and ask ChatGPT to decode it
-            base64_text = base64.b64encode(prompt.encode('utf-8')).decode('ascii')
-            processed_prompt = f"Please decode this Base64 text and respond in the same language: {base64_text}"
-        
-        # AppleScript to send message to ChatGPT
-        # Escape quotes for AppleScript
-        escaped_prompt = processed_prompt.replace('\\', '\\\\').replace('"', '\\"')
-        
-        applescript = f'''
-tell application "ChatGPT"
-    activate
-    delay 1
-end tell
-
-tell application "System Events"
-    tell process "ChatGPT"
-        -- Clear existing text
-        keystroke "a" using {{command down}}
-        key code 51 -- delete key
-        delay 0.5
-        
-        -- Type the processed prompt (ASCII only)
-        keystroke "{escaped_prompt}"
-        delay 0.5
-        keystroke return
-        
-        -- Wait for response completion
-        delay 3
-    end tell
-end tell
-
-return "Message sent to ChatGPT successfully"
-        '''
-        
-        result = subprocess.run(
-            ["osascript", "-e", applescript],
-            capture_output=True,
-            text=True
-        )
-        
-        if result.returncode != 0:
-            raise Exception(f"AppleScript error: {result.stderr}")
+        # Activate ChatGPT and send message
+        chatgpt_automation.activate_chatgpt()
+        chatgpt_automation.send_message(prompt)
         
         return "Message sent to ChatGPT successfully. Please check the ChatGPT app for the response."
         
     except Exception as e:
-        raise Exception(f"Failed to get response from ChatGPT: {str(e)}")
+        raise Exception(f"Failed to send message to ChatGPT: {str(e)}")
 
 @mcp.tool()
 async def get_conversations() -> list[str]:

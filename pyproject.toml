@@ -9,6 +9,7 @@ authors = [
 requires-python = ">=3.10"
 dependencies = [
     "mcp[cli]>=1.0.0",
+    "pyautogui>=0.9.54",
 ]
 
 [project.scripts]
