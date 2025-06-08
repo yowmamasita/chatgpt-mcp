@@ -5,8 +5,6 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 ## Features
 
 - Send prompts to ChatGPT from any MCP-compatible AI assistant
-- Create new conversations in ChatGPT
-- Retrieve list of conversations from ChatGPT
 - Built with Python and FastMCP
 
 ## Installation
@@ -63,20 +61,6 @@ Send a prompt to ChatGPT and receive the response.
 
 ```python
 ask_chatgpt(prompt="Hello, ChatGPT!")
-```
-
-### new_chatgpt_conversation
-Create a new conversation in ChatGPT.
-
-```python
-new_chatgpt_conversation()
-```
-
-### get_conversations
-Get a list of available conversations from ChatGPT.
-
-```python
-get_conversations()
 ```
 
 ### get_chatgpt_response
