@@ -1,5 +1,5 @@
 from mcp.server.fastmcp import FastMCP
-from mcp_tools import setup_mcp_tools
+from chatgpt_mcp.mcp_tools import setup_mcp_tools
 
 # Initialize the MCP server
 mcp = FastMCP("chatgpt")

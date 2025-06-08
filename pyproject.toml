@@ -6,11 +6,29 @@ readme = "README.md"
 authors = [
     { name = "Joon Hwan 김준환", email = "xncbf12@gmail.com" }
 ]
+license = {text = "MIT"}
+keywords = ["mcp", "chatgpt", "automation", "macos", "ai", "assistant"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: MacOS",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
 requires-python = ">=3.10"
 dependencies = [
-    "mcp[cli]>=1.0.0",
+    "mcp>=1.0.0",
     "pyautogui>=0.9.54",
 ]
+
+[project.urls]
+Homepage = "https://github.com/xncbf/chatgpt-mcp"
+Repository = "https://github.com/xncbf/chatgpt-mcp"
+Issues = "https://github.com/xncbf/chatgpt-mcp/issues"
 
 [project.scripts]
 chatgpt-mcp = "chatgpt_mcp:main"
@@ -18,3 +36,6 @@ chatgpt-mcp = "chatgpt_mcp:main"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["chatgpt_mcp"]

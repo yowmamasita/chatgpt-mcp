@@ -1,6 +1,6 @@
 import subprocess
 from mcp.server.fastmcp import FastMCP
-from chatgpt_automation import ChatGPTAutomation, check_chatgpt_access
+from chatgpt_mcp.chatgpt_automation import ChatGPTAutomation, check_chatgpt_access
 
 
 async def get_chatgpt_response() -> str:
