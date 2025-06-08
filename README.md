@@ -7,9 +7,14 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 - Send prompts to ChatGPT from any MCP-compatible AI assistant
 - Built with Python and FastMCP
 
-## Installation
+**Note:** This server only supports English text input. Non-English characters may not work properly.
 
-Using uv (recommended):
+## Installation & Setup
+
+### Step 1: Install ChatGPT Desktop App
+Make sure you have the ChatGPT desktop app installed and running on your macOS.
+
+### Step 2: Install this MCP Server
 
 ```bash
 # Clone the repository
@@ -18,15 +23,17 @@ cd chatgpt-mcp
 
 # Install dependencies with uv
 uv sync
-
-# Run the server
-uv run chatgpt-mcp
 ```
 
-## Usage
+### Step 3: Configure MCP Client
 
-### General MCP Client Configuration
+#### For Claude Code:
+```bash
+# Add MCP server to Claude Code
+claude mcp add chatgpt-mcp uv run /path/to/chatgpt-mcp
+```
 
+#### For other MCP clients:
 Add to your MCP client configuration:
 
 ```json
@@ -41,18 +48,16 @@ Add to your MCP client configuration:
 }
 ```
 
-### Claude Code Usage
+### Step 4: Start Using
 
-If you're using Claude Code, you can easily set up this MCP server:
+1. **Open ChatGPT desktop app** and make sure it's running
+2. **Open your MCP client** (Claude Code, etc.)
+3. **Use ChatGPT commands** in your AI assistant:
+   - "Send a message to ChatGPT"
+   - "Create a new ChatGPT conversation"
+   - "Get my ChatGPT conversations"
 
-1. **Add MCP server to Claude Code:**
-   ```bash
-   claude mcp add chatgpt-mcp uv run /path/to/chatgpt-mcp
-   ```
-
-2. **Use the tools in Claude Code:**
-   - Ask Claude Code to "send a message to ChatGPT"
-   - Claude Code will automatically use the `ask_chatgpt` tool
+The AI assistant will automatically use the appropriate MCP tools to interact with ChatGPT.
 
 ## Available Tools
 
