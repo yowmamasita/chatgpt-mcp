@@ -136,7 +136,7 @@ async def ask_chatgpt(prompt: str) -> str:
     await check_chatgpt_access()
     
     try:
-        # 프롬프트에서 개행 문자 제거 및 더블쿼츠를 싱글쿼츠로 변경
+        # Remove newline characters from prompt and change double quotes to single quotes
         cleaned_prompt = prompt.replace('\n', ' ').replace('\r', ' ').replace('"', "'").strip()
         
         # Activate ChatGPT and send message using keystroke
@@ -153,7 +153,7 @@ async def ask_chatgpt(prompt: str) -> str:
 
 
 def setup_mcp_tools(mcp: FastMCP):
-    """MCP 도구들을 설정"""
+    """Setup MCP tools"""
     
     @mcp.tool()
     async def ask_chatgpt_tool(prompt: str) -> str:

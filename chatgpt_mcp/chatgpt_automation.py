@@ -7,27 +7,27 @@ class ChatGPTAutomation:
         pass
         
     def activate_chatgpt(self):
-        """ChatGPT Desktop 앱 활성화"""
+        """Activate ChatGPT Desktop app"""
         subprocess.run(['osascript', '-e', 'tell application "ChatGPT" to activate'])
         time.sleep(1)
 
     def send_message_with_keystroke(self, message):
-        """AppleScript를 사용해서 직접 키스트로크로 메시지 전송"""
+        """Send message directly using keystrokes with AppleScript"""
         time.sleep(0.5)
         self._type_with_applescript(message)
     
     def _type_with_applescript(self, text):
-        """AppleScript를 사용해서 텍스트 입력"""
+        """Type text using AppleScript"""
         escaped_text = text.replace('"', '\\"').replace("\\", "\\\\")
         
         script = f'''
         tell application "System Events"
             tell process "ChatGPT"
-                -- 먼저 백스페이스
+                -- First backspace
                 key code 51
                 delay 0.1
                 
-                -- 텍스트 입력 (각 문자를 개별적으로)
+                -- Type text (each character individually)
                 set textToType to "{escaped_text}"
                 repeat with i from 1 to length of textToType
                     set currentChar to character i of textToType
@@ -35,7 +35,7 @@ class ChatGPTAutomation:
                     delay 0.01
                 end repeat
                 
-                -- Enter 키 입력
+                -- Press Enter key
                 key code 36
             end tell
         end tell
