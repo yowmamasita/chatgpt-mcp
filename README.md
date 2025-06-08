@@ -9,13 +9,34 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 
 **Note:** This server only supports English text input. Non-English characters may not work properly.
 
-## Installation & Setup
+## Installation
 
-### Step 1: Install ChatGPT Desktop App
-Make sure you have the ChatGPT desktop app installed and running on your macOS.
+### Prerequisites
+- macOS
+- ChatGPT desktop app installed and running
+- Python 3.10+
+- uv package manager
 
-### Step 2: Install this MCP Server
+## For Claude Code Users
 
+Simply run:
+```bash
+claude mcp add chatgpt-mcp uvx chatgpt-mcp
+```
+
+That's it! You can start using ChatGPT commands in Claude Code.
+
+## For Other MCP Clients
+
+### Step 1: Install the MCP Server
+
+#### Option A: Install from PyPI (Recommended)
+```bash
+# Install with uv
+uv add chatgpt-mcp
+```
+
+#### Option B: Manual Installation
 ```bash
 # Clone the repository
 git clone https://github.com/xncbf/chatgpt-mcp
@@ -25,17 +46,21 @@ cd chatgpt-mcp
 uv sync
 ```
 
-### Step 3: Configure MCP Client
+### Step 2: Configure Your MCP Client
 
-#### For Claude Code:
-```bash
-# Add MCP server to Claude Code
-claude mcp add chatgpt-mcp uv run /path/to/chatgpt-mcp
+If installed from PyPI, add to your MCP client configuration:
+```json
+{
+  "mcpServers": {
+    "chatgpt": {
+      "command": "uvx",
+      "args": ["chatgpt-mcp"]
+    }
+  }
+}
 ```
 
-#### For other MCP clients:
-Add to your MCP client configuration:
-
+If manually installed, add to your MCP client configuration:
 ```json
 {
   "mcpServers": {
@@ -48,7 +73,7 @@ Add to your MCP client configuration:
 }
 ```
 
-### Step 4: Start Using
+## Usage
 
 1. **Open ChatGPT desktop app** and make sure it's running
 2. **Open your MCP client** (Claude Code, etc.)
@@ -74,13 +99,6 @@ Get the latest response from ChatGPT after sending a message.
 ```python
 get_chatgpt_response()
 ```
-
-## Requirements
-
-- macOS
-- ChatGPT desktop app installed
-- Python 3.10+
-- uv package manager
 
 ## License
 
