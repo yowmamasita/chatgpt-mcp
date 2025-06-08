@@ -1,5 +1,4 @@
 import subprocess
-from typing import Optional
 from mcp.server.fastmcp import FastMCP
 from chatgpt_automation import ChatGPTAutomation, check_chatgpt_access
 
@@ -125,12 +124,11 @@ async def get_chatgpt_response() -> str:
         raise Exception(f"Failed to get response from ChatGPT: {str(e)}")
 
 
-async def ask_chatgpt(prompt: str, conversation_id: Optional[str] = None) -> str:
+async def ask_chatgpt(prompt: str) -> str:
     """Send a prompt to ChatGPT and return the response.
     
     Args:
         prompt: The text to send to ChatGPT
-        conversation_id: Optional conversation ID to continue a specific conversation
     
     Returns:
         ChatGPT's response
@@ -138,10 +136,13 @@ async def ask_chatgpt(prompt: str, conversation_id: Optional[str] = None) -> str
     await check_chatgpt_access()
     
     try:
-        # Activate ChatGPT and send message
+        # 프롬프트에서 개행 문자 제거 및 더블쿼츠를 싱글쿼츠로 변경
+        cleaned_prompt = prompt.replace('\n', ' ').replace('\r', ' ').replace('"', "'").strip()
+        
+        # Activate ChatGPT and send message using keystroke
         chatgpt_automation = ChatGPTAutomation()
         chatgpt_automation.activate_chatgpt()
-        chatgpt_automation.send_message(prompt)
+        chatgpt_automation.send_message_with_keystroke(cleaned_prompt)
         
         # Get the response
         response = await get_chatgpt_response()
@@ -253,49 +254,13 @@ async def get_conversations() -> list[str]:
         raise Exception(f"Error retrieving conversations: {str(e)}")
 
 
-async def new_chatgpt_conversation() -> str:
-    """Create a new ChatGPT conversation by pressing Cmd+N.
-    
-    Returns:
-        Success message
-    """
-    try:
-        await check_chatgpt_access()
-        
-        # Activate ChatGPT first
-        subprocess.run(['osascript', '-e', 'tell application "ChatGPT" to activate'])
-        
-        # Send Cmd+N to create new conversation
-        applescript = '''
-            tell application "System Events"
-                tell process "ChatGPT"
-                    keystroke "n" using command down
-                end tell
-            end tell
-        '''
-        
-        result = subprocess.run(
-            ["osascript", "-e", applescript],
-            capture_output=True,
-            text=True
-        )
-        
-        if result.returncode != 0:
-            raise Exception(f"AppleScript error: {result.stderr}")
-        
-        return "New ChatGPT conversation created successfully"
-        
-    except Exception as e:
-        raise Exception(f"Failed to create new conversation: {str(e)}")
-
-
 def setup_mcp_tools(mcp: FastMCP):
     """MCP 도구들을 설정"""
     
     @mcp.tool()
-    async def ask_chatgpt_tool(prompt: str, conversation_id: Optional[str] = None) -> str:
+    async def ask_chatgpt_tool(prompt: str) -> str:
         """Send a prompt to ChatGPT and return the response."""
-        return await ask_chatgpt(prompt, conversation_id)
+        return await ask_chatgpt(prompt)
 
     @mcp.tool()
     async def get_chatgpt_response_tool() -> str:
@@ -306,8 +271,3 @@ def setup_mcp_tools(mcp: FastMCP):
     async def get_conversations_tool() -> list[str]:
         """Get available conversations from ChatGPT."""
         return await get_conversations()
-
-    @mcp.tool()
-    async def new_chatgpt_conversation_tool() -> str:
-        """Create a new ChatGPT conversation."""
-        return await new_chatgpt_conversation()
