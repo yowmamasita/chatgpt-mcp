@@ -21,12 +21,12 @@ async def get_chatgpt_response() -> str:
                             return "No ChatGPT window found"
                         end if
                         -- Wait for the response with dynamic detection
-                        set maxWaitTime to 120 -- Maximum wait time in seconds
+                        set maxWaitTime to 300 -- Maximum wait time in seconds (5 minutes)
                         set waitInterval to 1 -- Check interval in seconds
                         set totalWaitTime to 0
                         set previousText to ""
                         set stableCount to 0
-                        set requiredStableChecks to 3 -- Number of consecutive stable checks required
+                        set requiredStableChecks to 60 -- Number of consecutive stable checks required (60 seconds for image generation)
                         
                         repeat while totalWaitTime < maxWaitTime
                             delay waitInterval
