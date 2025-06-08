@@ -79,8 +79,6 @@ If manually installed, add to your MCP client configuration:
 2. **Open your MCP client** (Claude Code, etc.)
 3. **Use ChatGPT commands** in your AI assistant:
    - "Send a message to ChatGPT"
-   - "Create a new ChatGPT conversation"
-   - "Get my ChatGPT conversations"
 
 The AI assistant will automatically use the appropriate MCP tools to interact with ChatGPT.
 
