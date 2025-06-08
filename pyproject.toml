@@ -1,0 +1,19 @@
+[project]
+name = "chatgpt-mcp"
+version = "1.0.0"
+description = "A Model Context Protocol server for interacting with ChatGPT on macOS with Korean support"
+readme = "README.md"
+authors = [
+    { name = "Joon Hwan 김준환", email = "xncbf12@gmail.com" }
+]
+requires-python = ">=3.10"
+dependencies = [
+    "mcp[cli]>=1.0.0",
+]
+
+[project.scripts]
+chatgpt-mcp = "chatgpt_mcp:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
