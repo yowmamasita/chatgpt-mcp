@@ -4,7 +4,9 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 
 ## Features
 
-- Send prompts to ChatGPT from any MCP-compatible AI assistant
+- Send prompts to ChatGPT and receive complete responses
+- Start new chat conversations to clear context
+- Automatic response detection using button state monitoring
 - Built with Python and FastMCP
 
 **Note:** This server only supports English text input. Non-English characters may not work properly.
@@ -78,24 +80,48 @@ If manually installed, add to your MCP client configuration:
 1. **Open ChatGPT desktop app** and make sure it's running
 2. **Open your MCP client** (Claude Code, etc.)
 3. **Use ChatGPT commands** in your AI assistant:
-   - "Send a message to ChatGPT"
+
+### Available Tools
+
+- **ask_chatgpt**: Send a prompt to ChatGPT and get the complete response
+  ```
+  Example: "Ask ChatGPT to explain quantum computing"
+  ```
+
+- **new_chat**: Start a fresh conversation in ChatGPT
+  ```
+  Example: "Start a new chat in ChatGPT"
+  ```
 
 The AI assistant will automatically use the appropriate MCP tools to interact with ChatGPT.
 
-## Available Tools
+## Tool Details
 
 ### ask_chatgpt
-Send a prompt to ChatGPT and receive the response.
+Send a prompt to ChatGPT and wait for the complete response.
 
+**Parameters:**
+- `prompt` (string): The text to send to ChatGPT
+
+**Returns:** ChatGPT's complete response text
+
+**Example:**
 ```python
-ask_chatgpt(prompt="Hello, ChatGPT!")
+response = await ask_chatgpt("What is the capital of France?")
+# Returns: "The capital of France is Paris..."
 ```
 
-### get_chatgpt_response
-Get the latest response from ChatGPT after sending a message.
+### new_chat
+Start a new conversation in ChatGPT, clearing any previous context.
 
+**Parameters:** None
+
+**Returns:** Success message
+
+**Example:**
 ```python
-get_chatgpt_response()
+result = await new_chat()
+# Returns: "Successfully started a new chat conversation"
 ```
 
 ## License
