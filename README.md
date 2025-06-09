@@ -1,6 +1,15 @@
-# ChatGPT MCP Server
+# ChatGPT MCP Plus
 
-A Model Context Protocol (MCP) server that enables AI assistants to interact with the ChatGPT desktop app on macOS.
+An enhanced Model Context Protocol (MCP) server that enables AI assistants to interact with the ChatGPT desktop app on macOS.
+
+> **Based on** the original [chatgpt-mcp](https://github.com/xncbf/chatgpt-mcp) by [@xncbf](https://github.com/xncbf)
+
+## What's New in Plus Version
+
+- **Dynamic Button Detection**: Reliable UI interaction without hardcoded positions
+- **Enhanced Response Handling**: Waits for complete responses using button state monitoring
+- **New Chat Tool**: Start fresh conversations with a single command
+- **Improved Reliability**: Better error handling and state detection
 
 ## Features
 
@@ -23,7 +32,7 @@ A Model Context Protocol (MCP) server that enables AI assistants to interact wit
 
 Simply run:
 ```bash
-claude mcp add chatgpt-mcp uvx chatgpt-mcp
+claude mcp add chatgpt-mcp-plus uvx chatgpt-mcp-plus
 ```
 
 That's it! You can start using ChatGPT commands in Claude Code.
@@ -35,13 +44,13 @@ That's it! You can start using ChatGPT commands in Claude Code.
 #### Option A: Install from PyPI (Recommended)
 ```bash
 # Install with uv
-uv add chatgpt-mcp
+uv add chatgpt-mcp-plus
 ```
 
 #### Option B: Manual Installation
 ```bash
 # Clone the repository
-git clone https://github.com/xncbf/chatgpt-mcp
+git clone https://github.com/yowmamasita/chatgpt-mcp
 cd chatgpt-mcp
 
 # Install dependencies with uv
@@ -54,9 +63,9 @@ If installed from PyPI, add to your MCP client configuration:
 ```json
 {
   "mcpServers": {
-    "chatgpt": {
+    "chatgpt-plus": {
       "command": "uvx",
-      "args": ["chatgpt-mcp"]
+      "args": ["chatgpt-mcp-plus"]
     }
   }
 }
@@ -66,9 +75,9 @@ If manually installed, add to your MCP client configuration:
 ```json
 {
   "mcpServers": {
-    "chatgpt": {
+    "chatgpt-plus": {
       "command": "uv",
-      "args": ["run", "chatgpt-mcp"],
+      "args": ["run", "chatgpt-mcp-plus"],
       "cwd": "/path/to/chatgpt-mcp"
     }
   }
@@ -123,6 +132,10 @@ Start a new conversation in ChatGPT, clearing any previous context.
 result = await new_chat()
 # Returns: "Successfully started a new chat conversation"
 ```
+
+## Acknowledgments
+
+This project is based on the original [chatgpt-mcp](https://github.com/xncbf/chatgpt-mcp) by [@xncbf](https://github.com/xncbf). The Plus version adds enhanced features including dynamic button detection, improved response handling, and new chat functionality.
 
 ## License
 

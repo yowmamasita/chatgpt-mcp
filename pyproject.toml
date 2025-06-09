@@ -1,9 +1,10 @@
 [project]
-name = "chatgpt-mcp"
-version = "1.0.1"
-description = "A Model Context Protocol server for interacting with ChatGPT on macOS with Korean support"
+name = "chatgpt-mcp-plus"
+version = "1.0.0"
+description = "Enhanced MCP server for ChatGPT with dynamic button detection and improved response handling"
 readme = "README.md"
 authors = [
+    { name = "Ben Sarmiento", email = "yowmamasita@gmail.com" },
     { name = "Joon Hwan 김준환", email = "xncbf12@gmail.com" }
 ]
 license = {text = "MIT"}
@@ -26,12 +27,13 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/xncbf/chatgpt-mcp"
-Repository = "https://github.com/xncbf/chatgpt-mcp"
-Issues = "https://github.com/xncbf/chatgpt-mcp/issues"
+Homepage = "https://github.com/yowmamasita/chatgpt-mcp"
+Repository = "https://github.com/yowmamasita/chatgpt-mcp"
+Issues = "https://github.com/yowmamasita/chatgpt-mcp/issues"
+"Original Project" = "https://github.com/xncbf/chatgpt-mcp"
 
 [project.scripts]
-chatgpt-mcp = "chatgpt_mcp:main"
+chatgpt-mcp-plus = "chatgpt_mcp:main"
 
 [build-system]
 requires = ["hatchling"]
