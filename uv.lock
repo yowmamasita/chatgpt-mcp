@@ -41,8 +41,8 @@ wheels = [
 ]
 
 [[package]]
-name = "chatgpt-mcp"
-version = "1.0.1"
+name = "chatgpt-mcp-plus"
+version = "1.0.0"
 source = { editable = "." }
 dependencies = [
     { name = "mcp" },

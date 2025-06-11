@@ -13,6 +13,7 @@ async def get_chatgpt_response() -> str:
         ChatGPT's latest response text
     """
     try:
+        # Use description property which actually contains the text
         applescript = '''
             tell application "ChatGPT"
                 activate
@@ -23,69 +24,29 @@ async def get_chatgpt_response() -> str:
                         if not (exists window 1) then
                             return "No ChatGPT window found"
                         end if
-                        -- Wait for the response with dynamic detection
-                        set maxWaitTime to 300 -- Maximum wait time in seconds (5 minutes)
-                        set waitInterval to 1 -- Check interval in seconds
-                        set totalWaitTime to 0
-                        set previousText to ""
-                        set stableCount to 0
-                        set requiredStableChecks to 60 -- Number of consecutive stable checks required (60 seconds for image generation)
                         
-                        repeat while totalWaitTime < maxWaitTime
-                            delay waitInterval
-                            set totalWaitTime to totalWaitTime + waitInterval
-                            
-                            -- Get current text
-                            if not (exists window 1) then
-                                return "No ChatGPT window found"
-                            end if
-                            set frontWin to front window
-                            set allUIElements to entire contents of frontWin
-                            set conversationText to {}
-                            repeat with e in allUIElements
-                                try
-                                    if (role of e) is "AXStaticText" then
-                                        set end of conversationText to (description of e)
+                        -- Get all text content immediately
+                        set frontWin to front window
+                        set allUIElements to entire contents of frontWin
+                        set allText to {}
+                        
+                        repeat with e in allUIElements
+                            try
+                                if (role of e) is "AXStaticText" then
+                                    set textDesc to description of e
+                                    if textDesc is not missing value then
+                                        set end of allText to (textDesc as string)
                                     end if
-                                end try
-                            end repeat
-                            
-                            set AppleScript's text item delimiters to linefeed
-                            set currentText to conversationText as text
-                            
-                            -- Check if text has stabilized (not changing anymore)
-                            if currentText is equal to previousText then
-                                set stableCount to stableCount + 1
-                                if stableCount ≥ requiredStableChecks then
-                                    -- Text has been stable for multiple checks, assume response is complete
-                                    exit repeat
                                 end if
-                            else
-                                -- Text changed, reset stable count
-                                set stableCount to 0
-                                set previousText to currentText
-                            end if
-                            
-                            -- Check for response completion indicators
-                            if currentText contains "▍" then
-                                -- ChatGPT is still typing (blinking cursor indicator)
-                                set stableCount to 0
-                            else if currentText contains "Regenerate" or currentText contains "Continue generating" then
-                                -- Response likely complete if these UI elements are visible
-                                set stableCount to stableCount + 1
-                            end if
+                            end try
                         end repeat
                         
-                        -- Final check for text content
-                        if (count of conversationText) = 0 then
-                            return "No response text found. ChatGPT may still be processing or encountered an error."
-                        else
-                            -- Clean up the response text
-                            set AppleScript's text item delimiters to linefeed
-                            set responseText to conversationText as text
-                            
-                            return responseText
-                        end if
+                        -- Join all text with newlines
+                        set AppleScript's text item delimiters to linefeed
+                        set fullText to allText as text
+                        
+                        -- Return all captured text
+                        return fullText
                     end tell
                 end tell
             end tell
@@ -100,28 +61,57 @@ async def get_chatgpt_response() -> str:
         if result.returncode != 0:
             raise Exception(f"AppleScript error: {result.stderr}")
         
-        # Post-process the result to clean up any UI text that might have been captured
-        cleaned_result = result.stdout.strip()
-        cleaned_result = cleaned_result.replace('Regenerate', '').replace('Continue generating', '').replace('▍', '').strip()
+        # Get the full text
+        full_text = result.stdout.strip()
         
-        # More context-aware incomplete response detection
-        is_likely_complete = (
-            len(cleaned_result) > 50 or  # Longer responses are likely complete
-            cleaned_result.endswith('.') or 
-            cleaned_result.endswith('!') or 
-            cleaned_result.endswith('?') or
-            cleaned_result.endswith(':') or
-            cleaned_result.endswith(')') or
-            cleaned_result.endswith('}') or
-            cleaned_result.endswith(']') or
-            '\n\n' in cleaned_result or  # Multiple paragraphs suggest completeness
-            cleaned_result and cleaned_result[0].isupper() and any(cleaned_result.endswith(p) for p in ['.', '!', '?'])  # Complete sentence structure
-        )
+        if not full_text:
+            return "No response received from ChatGPT."
         
-        if len(cleaned_result) > 0 and not is_likely_complete:
-            print("Warning: ChatGPT response may be incomplete")
+        # Split text into elements
+        elements = [e.strip() for e in full_text.split('\n') if e.strip()]
         
-        return cleaned_result if cleaned_result else "No response received from ChatGPT."
+        # Remove UI elements
+        ui_elements = ['Regenerate', 'Continue generating', 'Stop generating', 'Copy', '▍', 'ChatGPT']
+        elements = [e for e in elements if e not in ui_elements]
+        
+        if not elements:
+            return "No response text found. ChatGPT may still be processing or encountered an error."
+        
+        # Find the last user message by looking for typical patterns
+        last_user_index = -1
+        for i in range(len(elements) - 1, -1, -1):
+            elem = elements[i]
+            # Common patterns for user messages
+            if (elem.endswith('?') or 
+                elem.endswith('.') and any(elem.startswith(p) for p in ['Write', 'What', 'Can', 'Please', 'Hello', 'List', 'Explain', 'Create', 'Show']) or
+                elem.endswith('please.') or elem.endswith('else.')):
+                last_user_index = i
+                break
+        
+        # Get everything after the last user message
+        if last_user_index >= 0 and last_user_index < len(elements) - 1:
+            response_elements = elements[last_user_index + 1:]
+            response = '\n'.join(response_elements)
+        else:
+            # If we can't find a clear user message, take the last substantial text block
+            # This handles cases where the response is just a number or short answer
+            response = elements[-1] if elements else ""
+            
+            # If the last element seems like a user message, try the second to last
+            if response.endswith('?') and len(elements) > 1:
+                response = elements[-2]
+        
+        # Clean up any remaining UI elements that might have slipped through
+        for ui_elem in ui_elements:
+            response = response.replace(ui_elem, '').strip()
+        
+        # Remove multiple blank lines
+        response = '\n'.join(line for line in response.split('\n') if line.strip() or response.count('\n') < 2)
+        
+        if not response:
+            return "No response text found. ChatGPT may still be processing or encountered an error."
+        
+        return response.strip()
         
     except Exception as e:
         raise Exception(f"Failed to get response from ChatGPT: {str(e)}")
@@ -180,22 +170,45 @@ async def ask_chatgpt(prompt: str) -> str:
             else:
                 raise Exception("ChatGPT did not start processing the message")
         
-        # Wait for processing to complete (button changes from 'stop' to another state)
+        # Wait for processing to complete with a shorter initial timeout
         import time
         start_time = time.time()
-        max_wait = 300  # 5 minutes max
+        initial_timeout = 15  # 15 seconds initial timeout as suggested
+        max_wait = 300  # 5 minutes max for longer responses
         
-        while time.time() - start_time < max_wait:
+        # First, wait with the shorter timeout
+        while time.time() - start_time < initial_timeout:
             button_info = button_helper.find_action_button()
             button_state = button_info.get('state') if button_info else None
             
             # If button is no longer in 'stop' state, processing is complete
             if button_state and button_state != 'stop':
                 # Wait a bit more to ensure text is fully rendered
-                await asyncio.sleep(2)
+                await asyncio.sleep(1)
                 break
             
-            await asyncio.sleep(0.5)
+            await asyncio.sleep(0.2)  # Check more frequently
+        
+        # If still processing after initial timeout, continue waiting but check for response
+        if button_helper.is_processing():
+            # Try to get response anyway - ChatGPT might have responded but button is stuck
+            try:
+                response = await get_chatgpt_response()
+                if response and response != "No response received from ChatGPT." and len(response) > 10:
+                    return response
+            except:
+                pass
+            
+            # Continue waiting for button state change
+            while time.time() - start_time < max_wait:
+                button_info = button_helper.find_action_button()
+                button_state = button_info.get('state') if button_info else None
+                
+                if button_state and button_state != 'stop':
+                    await asyncio.sleep(1)
+                    break
+                
+                await asyncio.sleep(0.5)
         
         # Get the complete response
         response = await get_chatgpt_response()
