@@ -18,7 +18,8 @@ class ChatGPTAutomation:
     def send_message_with_keystroke(self, message):
         """Send message using clipboard paste for speed and reliability"""
         time.sleep(0.2)  # Reduced delay since pasting is faster
-        self._type_with_applescript(message)
+        # Paste the message and press Enter
+        self._type_with_applescript(message, press_enter=True)
     
     
     def send_message_with_button(self, message):
@@ -70,7 +71,7 @@ class ChatGPTAutomation:
         result = subprocess.run(['osascript', '-e', script], capture_output=True, text=True)
         return result.returncode == 0
     
-    def _type_with_applescript(self, text, press_enter=True):
+    def _type_with_applescript(self, text, press_enter=False):
         """Type text using clipboard and paste for speed and reliability"""
         # First, copy text to clipboard
         process = subprocess.Popen(['pbcopy'], stdin=subprocess.PIPE, text=True)
