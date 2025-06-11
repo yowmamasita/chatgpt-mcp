@@ -16,8 +16,8 @@ class ChatGPTAutomation:
         time.sleep(1)
 
     def send_message_with_keystroke(self, message):
-        """Send message directly using keystrokes with AppleScript"""
-        time.sleep(0.5)
+        """Send message using clipboard paste for speed and reliability"""
+        time.sleep(0.2)  # Reduced delay since pasting is faster
         self._type_with_applescript(message)
     
     
@@ -71,28 +71,29 @@ class ChatGPTAutomation:
         return result.returncode == 0
     
     def _type_with_applescript(self, text, press_enter=True):
-        """Type text using AppleScript with optional Enter key"""
-        escaped_text = text.replace('"', '\\"').replace("\\", "\\\\")
+        """Type text using clipboard and paste for speed and reliability"""
+        # First, copy text to clipboard
+        process = subprocess.Popen(['pbcopy'], stdin=subprocess.PIPE, text=True)
+        process.communicate(input=text)
         
-        script = f'''
+        # Then paste using Cmd+V
+        script = '''
         tell application "System Events"
             tell process "ChatGPT"
-                -- First backspace
-                key code 51
+                -- Clear any existing text with Cmd+A and Delete
+                keystroke "a" using command down
+                delay 0.1
+                key code 51  -- delete
                 delay 0.1
                 
-                -- Type text (each character individually)
-                set textToType to "{escaped_text}"
-                repeat with i from 1 to length of textToType
-                    set currentChar to character i of textToType
-                    keystroke currentChar
-                    delay 0.01
-                end repeat
+                -- Paste text from clipboard
+                keystroke "v" using command down
+                delay 0.2
         '''
         
         if press_enter:
             script += '''
-                -- Press Enter key (most reliable way to send)
+                -- Press Enter key to send
                 key code 36
             '''
         

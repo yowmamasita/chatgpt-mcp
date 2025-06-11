@@ -137,8 +137,9 @@ async def ask_chatgpt(prompt: str) -> str:
     button_helper = ChatGPTButtonHelper()
     
     try:
-        # Remove newline characters from prompt and change double quotes to single quotes
-        cleaned_prompt = prompt.replace('\n', ' ').replace('\r', ' ').replace('"', "'").strip()
+        # Since we're using clipboard paste, we can keep newlines
+        # Just escape any quotes to prevent issues
+        cleaned_prompt = prompt.replace('"', "'").strip()
         
         # Activate ChatGPT and send message
         chatgpt_automation = ChatGPTAutomation()
