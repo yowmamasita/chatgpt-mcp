@@ -13,108 +13,75 @@ async def get_chatgpt_response() -> str:
         ChatGPT's latest response text
     """
     try:
-        # Use description property which actually contains the text
-        applescript = '''
-            tell application "ChatGPT"
-                activate
-                delay 1
-                tell application "System Events"
-                    tell process "ChatGPT"
-                        -- Check if window exists before accessing
-                        if not (exists window 1) then
-                            return "No ChatGPT window found"
-                        end if
-                        
-                        -- Get all text content immediately
-                        set frontWin to front window
-                        set allUIElements to entire contents of frontWin
-                        set allText to {}
-                        
-                        repeat with e in allUIElements
-                            try
-                                if (role of e) is "AXStaticText" then
-                                    set textDesc to description of e
-                                    if textDesc is not missing value then
-                                        set end of allText to (textDesc as string)
+        # Import the improved extraction
+        from chatgpt_mcp.improved_extraction import get_chatgpt_response_improved
+        return await get_chatgpt_response_improved()
+    except ImportError:
+        # Fallback to basic extraction if improved version not available
+        try:
+            # Use description property which actually contains the text
+            applescript = '''
+                tell application "ChatGPT"
+                    activate
+                    delay 1
+                    tell application "System Events"
+                        tell process "ChatGPT"
+                            -- Check if window exists before accessing
+                            if not (exists window 1) then
+                                return "No ChatGPT window found"
+                            end if
+                            
+                            -- Get all text content immediately
+                            set frontWin to front window
+                            set allUIElements to entire contents of frontWin
+                            set allText to {}
+                            
+                            repeat with e in allUIElements
+                                try
+                                    if (role of e) is "AXStaticText" then
+                                        set textDesc to description of e
+                                        if textDesc is not missing value then
+                                            set end of allText to (textDesc as string)
+                                        end if
                                     end if
-                                end if
-                            end try
-                        end repeat
-                        
-                        -- Join all text with newlines
-                        set AppleScript's text item delimiters to linefeed
-                        set fullText to allText as text
-                        
-                        -- Return all captured text
-                        return fullText
+                                end try
+                            end repeat
+                            
+                            -- Join all text with newlines
+                            set AppleScript's text item delimiters to linefeed
+                            set fullText to allText as text
+                            
+                            -- Return all captured text
+                            return fullText
+                        end tell
                     end tell
                 end tell
-            end tell
-        '''
-        
-        result = subprocess.run(
-            ["osascript", "-e", applescript],
-            capture_output=True,
-            text=True
-        )
-        
-        if result.returncode != 0:
-            raise Exception(f"AppleScript error: {result.stderr}")
-        
-        # Get the full text
-        full_text = result.stdout.strip()
-        
-        if not full_text:
-            return "No response received from ChatGPT."
-        
-        # Split text into elements
-        elements = [e.strip() for e in full_text.split('\n') if e.strip()]
-        
-        # Remove UI elements
-        ui_elements = ['Regenerate', 'Continue generating', 'Stop generating', 'Copy', '▍', 'ChatGPT']
-        elements = [e for e in elements if e not in ui_elements]
-        
-        if not elements:
-            return "No response text found. ChatGPT may still be processing or encountered an error."
-        
-        # Find the last user message by looking for typical patterns
-        last_user_index = -1
-        for i in range(len(elements) - 1, -1, -1):
-            elem = elements[i]
-            # Common patterns for user messages
-            if (elem.endswith('?') or 
-                elem.endswith('.') and any(elem.startswith(p) for p in ['Write', 'What', 'Can', 'Please', 'Hello', 'List', 'Explain', 'Create', 'Show']) or
-                elem.endswith('please.') or elem.endswith('else.')):
-                last_user_index = i
-                break
-        
-        # Get everything after the last user message
-        if last_user_index >= 0 and last_user_index < len(elements) - 1:
-            response_elements = elements[last_user_index + 1:]
-            response = '\n'.join(response_elements)
-        else:
-            # If we can't find a clear user message, take the last substantial text block
-            # This handles cases where the response is just a number or short answer
-            response = elements[-1] if elements else ""
+            '''
             
-            # If the last element seems like a user message, try the second to last
-            if response.endswith('?') and len(elements) > 1:
-                response = elements[-2]
-        
-        # Clean up any remaining UI elements that might have slipped through
-        for ui_elem in ui_elements:
-            response = response.replace(ui_elem, '').strip()
-        
-        # Remove multiple blank lines
-        response = '\n'.join(line for line in response.split('\n') if line.strip() or response.count('\n') < 2)
-        
-        if not response:
-            return "No response text found. ChatGPT may still be processing or encountered an error."
-        
-        return response.strip()
-        
-    except Exception as e:
-        raise Exception(f"Failed to get response from ChatGPT: {str(e)}")
+            result = subprocess.run(
+                ["osascript", "-e", applescript],
+                capture_output=True,
+                text=True
+            )
+            
+            if result.returncode != 0:
+                raise Exception(f"AppleScript error: {result.stderr}")
+            
+            # Get the full text and return it as-is for basic fallback
+            full_text = result.stdout.strip()
+            
+            if not full_text:
+                return "No response received from ChatGPT."
+            
+            # Basic cleanup only
+            ui_elements = ['Regenerate', 'Continue generating', 'Stop generating', 'Copy', '▍', 'ChatGPT']
+            for ui_elem in ui_elements:
+                full_text = full_text.replace(ui_elem, '').strip()
+            
+            return full_text
+            
+        except Exception as e:
+            raise Exception(f"Failed to get response from ChatGPT: {str(e)}")
 
 
 async def ask_chatgpt(prompt: str) -> str:
